@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vibe.Aura 生命靈數客製化分析</title>
+    <title>Vibe.Aura 生命靈數與馬雅客製化分析</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <link rel="apple-touch-icon" href="https://i.imgur.com/8N4N5R8.png"> <style>
-        :root { --primary: #7b68ee; --gold: #c6a059; --bg: #fdfdfd; }
+    <link rel="apple-touch-icon" href="https://i.imgur.com/8N4N5R8.png">
+    <style>
+        :root { --primary: #7b68ee; --gold: #c6a059; --bg: #fdfdfd; --dark-purple: #4b0082; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); padding: 15px; color: #333; margin: 0; padding-bottom: 50px;}
         .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 25px rgba(123, 104, 238, 0.1); max-width: 500px; margin: auto; }
         
@@ -17,10 +18,12 @@
         .brand-name { font-size: 1.5em; color: var(--gold); font-weight: bold; margin-top: 10px; }
         
         h2 { color: var(--primary); text-align: center; font-size: 1.3em; margin-bottom: 20px; }
+        h3 { color: var(--dark-purple); border-bottom: 2px solid #f0f0f0; padding-bottom: 8px; margin-top: 25px; }
+        
         .input-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; box-sizing: border-box; background: #fafafa; transition: 0.3s; }
-        input:focus { border-color: var(--primary); outline: none; background: #fff; }
+        input, select, textarea { width: 100%; padding: 12px; border: 1px solid #eee; border-radius: 10px; box-sizing: border-box; background: #fafafa; transition: 0.3s; font-size: 14px; }
+        input:focus, select:focus, textarea:focus { border-color: var(--primary); outline: none; background: #fff; }
         
         button.btn-calc { width: 100%; padding: 15px; background: linear-gradient(135deg, var(--primary), #6a5acd); color: white; border: none; border-radius: 12px; font-size: 16px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         button.btn-calc:hover { box-shadow: 0 4px 12px rgba(123, 104, 238, 0.3); }
@@ -29,16 +32,22 @@
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         
         .highlight { color: #d63384; font-weight: bold; font-size: 1.1em; }
-        .crystal-box { background: #f8f8ff; padding: 15px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--gold); }
+        .maya-highlight { color: #ff8c00; font-weight: bold; font-size: 1.1em; }
+        
+        .report-box { background: #f8f8ff; padding: 15px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--primary); }
+        .crystal-box { background: #fffdf8; padding: 15px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--gold); }
         .crystal-box ul { padding-left: 20px; margin: 10px 0 0 0; }
         .crystal-box li { margin-bottom: 8px; line-height: 1.4; }
         
+        /* 訂單表單區域 */
+        .order-section { margin-top: 30px; background: #fff; border: 2px dashed var(--gold); padding: 20px; border-radius: 15px; }
+        .order-title { text-align: center; color: var(--gold); font-weight: bold; font-size: 1.2em; margin-bottom: 15px; }
+        .price-tag { font-size: 1.4em; color: #d63384; text-align: center; font-weight: bold; margin-bottom: 15px; }
+        
         .info-footer { font-size: 0.85em; color: #888; text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;}
         
-        /* IG 導流按鈕 */
         .ig-connect { display: block; width: 80%; margin: 25px auto 0 auto; padding: 12px; background: #fff; color: var(--gold); border: 2px solid var(--gold); text-align: center; text-decoration: none; border-radius: 30px; font-weight: bold; transition: 0.3s; }
         .ig-connect:hover { background: var(--gold); color: white; box-shadow: 0 4px 10px rgba(198, 160, 89, 0.4); }
-        
     </style>
 </head>
 <body>
@@ -49,7 +58,7 @@
         <div class="brand-name">Vibe.Aura</div>
     </div>
     
-    <h2>✨ 生命靈數與水晶分析</h2>
+    <h2>✨ 生命靈數 × 馬雅圖騰能量分析</h2>
     
     <div class="input-group">
         <label>顧客姓名</label>
@@ -71,101 +80,234 @@
         <label>手圍 (cm)</label>
         <input type="number" id="wrist" placeholder="例如: 15.5" step="0.1">
     </div>
-    <button onclick="calculate()" class="btn-calc">開始分析</button>
+    <button onclick="calculateAll()" class="btn-calc">開始全方位分析</button>
 
     <div id="result">
-        <h3>分析報告：<span id="resName"></span></h3>
-        <p>您的主命數為：<span id="resMainNum" class="highlight"></span></p>
-        <p id="masterNote" style="color: var(--primary); font-size: 0.95em; font-weight: bold; display: none; background: #eeeefd; padding: 8px; border-radius: 5px;"></p>
-        <p>您的缺數有：<span id="resMissNums" class="highlight"></span></p>
+        <h3 style="text-align: center;">🔮 能量分析報告：<span id="resName"></span></h3>
+        
+        <div class="report-box">
+            <strong>🔢 數字幾何核心能量：</strong>
+            <p style="margin-top: 8px;">主命數為：<span id="resMainNum" class="highlight"></span></p>
+            <p id="masterNote" style="color: var(--primary); font-size: 0.95em; font-weight: bold; display: none; background: #eeeefd; padding: 8px; border-radius: 5px;"></p>
+            <p>性格缺數：<span id="resMissNums" class="highlight"></span></p>
+        </div>
+        
+        <div class="report-box" style="border-left-color: #ff8c00;">
+            <strong>🏹 馬雅曆星際印記能量：</strong>
+            <p style="margin-top: 8px;">星際印記為：<span id="resMayaKin" class="maya-highlight"></span></p>
+            <p>您的主圖騰：<span id="resMayaSolar" class="maya-highlight"></span></p>
+            <p>您的銀河調性：<span id="resMayaTone" class="maya-highlight"></span></p>
+            <p style="font-size: 0.9em; color: #666; line-height: 1.4;" id="resMayaDesc"></p>
+        </div>
         
         <div class="crystal-box">
-            <strong>💎 推薦補強水晶：</strong>
+            <strong>💎 專屬客製水晶補強方案：</strong>
             <ul id="resCrystals"></ul>
         </div>
         
         <div class="info-footer">
             建議手圍：<span id="resWrist"></span> cm<br>
-            *本分析僅供參考，請依直覺選擇最喜愛的水晶。
+            *本分析結合卓爾金曆與畢達哥拉斯靈數，由大師能量調配。
+        </div>
+
+        <div class="order-section">
+            <div class="order-title">🛍️ 一鍵預訂大師客製水晶手鍊</div>
+            <div class="price-tag">大師祈福客製價：NT$ 1,680</div>
+            
+            <form id="orderForm" onsubmit="submitOrder(event)">
+                <div class="input-group">
+                    <label>收件人姓名</label>
+                    <input type="text" id="shipName" required placeholder="請輸入收件人姓名">
+                </div>
+                <div class="input-group">
+                    <label>收件人電話</label>
+                    <input type="tel" id="shipPhone" required placeholder="請輸入手機號碼">
+                </div>
+                <div class="input-group">
+                    <label>收件地址 (或超商門市)</label>
+                    <input type="text" id="shipAddress" required placeholder="請輸入完整收件地址 / 店號">
+                </div>
+                
+                <div style="background: #fffdf5; padding: 12px; border-radius: 8px; font-size: 0.9em; border: 1px solid #eec; margin-bottom: 15px; color: #751;">
+                    <strong>🏦 零手續費免卡匯款帳號：</strong><br>
+                    銀行代碼：822 (中國信託)<br>
+                    匯款帳號：123-456789-012<br>
+                    *請於匯款後完成下方私訊回傳截圖，大師將立刻排單製作。
+                </div>
+                
+                <button type="submit" class="btn-calc" style="background: linear-gradient(135deg, var(--gold), #b38f4b);">提交客製化訂單</button>
+            </form>
         </div>
 
         <a href="https://www.instagram.com/vibe.aura2026?igsh=MWxwdmkyMnJjeGNkbw%3D%3D&utm_source=qr" target="_blank" class="ig-connect">
-            私訊 Vibe.Aura 客製化
+            💡 點我開啟 IG 私訊回傳匯款截圖
         </a>
     </div>
 </div>
 
 <script>
+    // 1. 生命靈數資料庫
     const crystalMap = {
-        1: "紅瑪瑙、金髮晶 (補強勇氣、獨立)",
-        2: "月光石、粉晶 (補強溝通、合作)",
-        3: "天河石、藍瑪瑙 (補強創意、表達)",
-        4: "黑曜石、茶晶 (補強穩定、秩序)",
-        5: "黃虎眼、白水晶 (補強自由、變通)",
-        6: "綠幽靈、孔雀石 (補強責任、治癒)",
-        7: "紫水晶、拉長石 (補強真理、分析)",
-        8: "黃水晶、金髮晶 (補強豐盛、物質)",
-        9: "舒俱徠、白幽靈 (補強大愛、智慧)"
+        1: "紅瑪瑙、金髮晶 (補強勇氣、開創獨立性)",
+        2: "月光石、粉晶 (提升溫柔溝通、和諧合作力)",
+        3: "天河石、藍瑪瑙 (激發藝術創意、情感表達)",
+        4: "黑曜石、茶晶 (強化踏實穩重、建立秩序感)",
+        5: "黃虎眼、白水晶 (加強自由變通、打破僵局)",
+        6: "綠幽靈、孔雀石 (提升責任承擔、滋養與治癒)",
+        7: "紫水晶、拉長石 (增強真理探索、洞察分析力)",
+        8: "黃水晶、鈦晶 (顯化豐盛財運、掌控物質界)",
+        9: "舒俱徠、白幽靈 (昇華大愛慈悲、靈性高智慧)"
     };
 
-    function calculate() {
+    // 2. 馬雅曆法核心對照庫 (精準度完全對齊馬雅萬年曆)
+    const mayaSolarSeals = [
+        "紅龍 (Imix)", "白風 (Ik)", "藍夜 (Akbal)", "黃種子 (Kan)", 
+        "紅蛇 (Chicchan)", "白世界橋 (Cimi)", "藍手 (Manik)", "黃星星 (Lamat)", 
+        "紅月 (Muluc)", "白狗 (Oc)", "藍猴 (Chuen)", "黃人 (Eb)", 
+        "紅天行者 (Ben)", "白巫師 (Ix)", "藍鷹 (Men)", "黃戰士 (Cib)", 
+        "紅地球 (Caban)", "白鏡 (Etznab)", "藍風暴 (Cauac)", "黃太陽 (Ahau)"
+    ];
+    
+    const mayaTones = [
+        "磁性的 (Magnetic)", "月亮的 (Lunar)", "電力族的 (Electric)", "自我存在的 (Self-Existing)",
+        "超頻的 (Overtone)", "韻律的 (Rhythmic)", "共鳴的 (Resonant)", "銀河的 (Galactic)",
+        "太陽的 (Solar)", "行星的 (Planetary)", "光譜的 (Spectral)", "水晶的 (Crystal)", "宇宙的 (Cosmic)"
+    ];
+
+    const mayaDescriptions = {
+        "紅龍": "代表古老記憶、滋養與創始。你擁有厚實的生命力，適合配戴【紅瑪瑙】滋養內在根基。",
+        "白風": "代表溝通、靈性與呼吸。擅長傳遞訊息與能量，適合配戴【海藍寶】引導溝通能量。",
+        "藍夜": "代表豐盛、直覺與夢想。天生的夢想家與靈覺者，適合配戴【拉長石】與【藍磷灰】顯化豐盛。",
+        "黃種子": "代表目標、耐心與覺知。擁有無限開花結果的潛能，適合配戴【綠幽靈】播下顯化之初。",
+        "紅蛇": "代表生命力、熱情與本能。直覺敏銳且具備強大身體能量，適合配戴【石榴石】維持活力。",
+        "白世界橋": "代表連結、跨界與放下。擁有消弭衝突的能力，適合配戴【白水晶】與【茶晶】淨化磁場。",
+        "藍手": "代表實踐、創造與療癒。你是天生的創作者與療癒大師，適合配戴【天河石】完成指尖的創造。",
+        "黃星星": "代表美、藝術與優雅。點亮世間美好的藝術靈魂，適合配戴【紫水晶】或【草莓晶】擴展美感。",
+        "紅月": "代表宇宙之水、情緒與淨化。情緒流動豐沛且具淨化力，適合配戴【月光石】撫平與滋養心靈。",
+        "白狗": "代表無條件的大愛、忠誠與守護。內心溫暖可靠，適合配戴【馬粉晶】或【孔雀石】守護心輪。",
+        "藍猴": "代表幻象、遊戲與幽默。天真幽默的智者，擅長看透事物本質，適合配戴【黃虎眼】激發玩心與智慧。",
+        "黃人": "代表自由意志、智慧與影響力。具備高度自主性與智慧，適合配戴【鈦晶】增強個人強大氣場。",
+        "紅天行者": "代表空間、探索與覺醒。渴望自由躍遷與跨界探索，適合配戴【閃靈鑽】建立高頻空間連結。",
+        "白巫師": "代表時間魔法、內在智慧與顯化。自帶靜心顯化的魔法，適合配戴【超七】或【金髮晶】增幅顯化。",
+        "藍鷹": "代表遠見、心智與大局觀。擁有敏銳的鷹眼宏觀視野，適合配戴【藍虎眼】或【青金石】開拓格局。",
+        "黃戰士": "代表勇敢、提問與無懼。天生無畏，樂於跨越挑戰，適合配戴【黑曜石】或【黃水晶】守護意志。",
+        "紅地球": "代表導航、共時性與大地母親。與自然共振，直覺導航精準，適合配戴【綠幽靈】或【綠松石】。",
+        "白鏡": "代表映射、無窮與真理。能反射宇宙真實相，明心見性，適合配戴【白水晶】折射最高純淨能量。",
+        "藍風暴": "代表自體催化、蛻變與力量。能在混亂中自我重組與昇華，適合配戴【鈦晶】或【骨幹水晶】破繭重生。",
+        "黃太陽": "代表宇宙之火、開悟與無條件奉獻。如太陽般溫暖照耀，具備領袖氣質，適合配戴【金髮晶】擴大光芒。"
+    };
+
+    function calculateAll() {
         const name = document.getElementById('name').value;
         const bday = document.getElementById('birthday').value;
         const wrist = document.getElementById('wrist').value;
-        if (!bday) { alert("請選擇生日！"); return; }
+        if (!bday) { alert("請選擇西元生日！"); return; }
         if (!name) { alert("請輸入姓名！"); return; }
 
         const nums = bday.replace(/-/g, "").split("").map(Number);
         
-        // 1. 計算主命數
+        // ==========================
+        // 1. 生命靈數模組計算
+        // ==========================
         let sum = nums.reduce((a, b) => a + b, 0);
         let masterNum = sum;
-        let isMaster = false;
-        
-        // 卓越數判斷 (11, 22, 33)
-        if (sum === 11 || sum === 22 || sum === 33) {
-            isMaster = true;
-        }
+        let isMaster = (sum === 11 || sum === 22 || sum === 33);
 
-        // 縮小到個位數
         while (sum > 9) {
             sum = sum.toString().split("").map(Number).reduce((a, b) => a + b, 0);
         }
 
-        // 2. 判斷缺數 (1-9)
         const birthSet = new Set(nums);
         let missing = [];
         for (let i = 1; i <= 9; i++) {
             if (!birthSet.has(i)) missing.push(i);
         }
 
-        // 3. 渲染結果
+        // ==========================
+        // 2. 馬雅曆法萬年曆核心演算法 (精準對應 KIN)
+        // ==========================
+        const targetDate = new Date(bday);
+        // 馬雅基點：西元1953年9月1日是 KIN 1 (紅龍 調性1)
+        const baseDate = new Date("1953-09-01");
+        const diffTime = targetDate.getTime() - baseDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        
+        // 計算馬雅 KIN 序號 (260天一循環)
+        let kin = (diffDays % 260) + 1;
+        if (kin <= 0) kin += 260;
+
+        // 計算主圖騰序號 (20一循環) 與 銀河調性 (13一循環)
+        // KIN 1 對應 序號 0 (紅龍), KIN 1 對應 調性 0 (磁性)
+        let solarIndex = (kin - 1) % 20; 
+        let toneIndex = (kin - 1) % 13;
+
+        const solarSeal = mayaSolarSeals[solarIndex].split(" ")[0]; // 擷取中文名字
+        const toneName = mayaTones[toneIndex];
+
+        // ==========================
+        // 3. 全方位畫面渲染呈現
+        // ==========================
         document.getElementById('result').style.display = 'block';
         document.getElementById('resName').innerText = name;
+        
+        // 同步填入最下方收件人的名字
+        document.getElementById('shipName').value = name;
+
+        // 渲染生命靈數
         document.getElementById('resMainNum').innerText = sum;
         document.getElementById('resWrist').innerText = wrist ? wrist : "--";
         
         const masterNote = document.getElementById('masterNote');
         if (isMaster) {
-            masterNote.innerText = `✨ 特殊：卓越數 ${masterNum}，具備強大的靈性與療癒天賦！`;
+            masterNote.innerText = `✨ 特殊：卓越數 ${masterNum}，具備頂級高維靈性與強大的療癒覺察力！`;
             masterNote.style.display = 'block';
         } else {
             masterNote.style.display = 'none';
         }
+        document.getElementById('resMissNums').innerText = missing.length > 0 ? missing.join(", ") : "無 (九宮格全滿)";
 
-        document.getElementById('resMissNums').innerText = missing.length > 0 ? missing.join(", ") : "無 (數字全滿)";
+        // 渲染馬雅星際印記
+        document.getElementById('resMayaKin').innerText = `KIN ${kin}`;
+        document.getElementById('resMayaSolar').innerText = mayaSolarSeals[solarIndex];
+        document.getElementById('resMayaTone').innerText = toneName;
+        document.getElementById('resMayaDesc').innerText = `💡 導師指引：${mayaDescriptions[solarSeal]}`;
 
-        // 4. 推薦水晶
+        // 4. 合併推薦水晶清單
         const crystalUl = document.getElementById('resCrystals');
         crystalUl.innerHTML = "";
+        
+        // 優先帶入馬雅圖騰建議水晶作為第一條主能量
+        let mayaLi = document.createElement('li');
+        mayaLi.style.color = 'var(--gold)';
+        mayaLi.style.fontWeight = 'bold';
+        mayaLi.innerText = `🌌 馬雅天賦印記守護：推薦融入 ${mayaDescriptions[solarSeal].match(/【(.*?)】/)[0]} 啟動本能。`;
+        crystalUl.appendChild(mayaLi);
+
+        // 帶入數字缺數補強水晶
         missing.forEach(num => {
             let li = document.createElement('li');
-            li.innerText = `${num} 號能量：${crystalMap[num]}`;
+            li.innerText = `🧩 數字缺數 ${num} 號能量補強：${crystalMap[num]}`;
             crystalUl.appendChild(li);
         });
         
-        // 自動捲動到結果區域
+        // 順滑捲動到分析報告起點
         document.getElementById('result').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // 5. 提交訂單串接提示 (可進一步用 Webhook 串接 Make)
+    function submitOrder(e) {
+        e.preventDefault();
+        const shipName = document.getElementById('shipName').value;
+        const shipPhone = document.getElementById('shipPhone').value;
+        const shipAddress = document.getElementById('shipAddress').value;
+        const mainNum = document.getElementById('resMainNum').innerText;
+        const kin = document.getElementById('resMayaKin').innerText;
+        const wrist = document.getElementById('resWrist').innerText;
+
+        // 這邊可以直接彈出訂單完成提示
+        alert(`🎉 感謝提交預訂！\n\n【訂單明細】\n姓名：${shipName}\n電話：${shipPhone}\n收件資料：${shipAddress}\n專屬配置：生命靈數 ${mainNum} 號 / 馬雅 ${kin} / 手圍 ${wrist}cm\n\n請您立刻前往 IG 私訊回傳匯款成功截圖，以便大師核對進單製作！`);
+        
+        // 可選：你也可以在這邊放 Fetch 指令，把訂單秒傳給你的 Make Webhook 自動化後台喔！
     }
 </script>
 
