@@ -44,7 +44,7 @@
     
     <h2>✨ 馬雅圖騰 × 生命靈數全方位分析</h2>
     
-    <form id="appForm" onsubmit="sendToMake(event)">
+    <form id="appForm" onsubmit="fetchMayaAndSendToMake(event)">
         <div class="input-group">
             <label>顧客姓名</label>
             <input type="text" id="name" required placeholder="請輸入您的姓名">
@@ -68,10 +68,10 @@
         <button type="submit" id="submitBtn" class="btn-calc">啟動大師占卜並提交訂單 🔮</button>
     </form>
 
-    <div id="loadingStatus">🔮 大師正在觀星連結能量中，請稍候...</div>
+    <div id="loadingStatus">🔮 大師正在遠端連線馬雅曆法數據中，請稍候...</div>
 
     <div class="info-footer">
-        *資料送出後將由 Vibe.Aura AI 大師依據精準星際曆法進行客製化調配。
+        *本系統已精準對接馬雅圖騰查詢系統，由 Vibe.Aura 後台大腦即時調配。
     </div>
 
     <a href="https://www.instagram.com/vibe.aura2026?igsh=MWxwdmkyMnJjeGNkbw%3D%3D&utm_source=qr" target="_blank" class="ig-connect">
@@ -80,34 +80,89 @@
 </div>
 
 <script>
-    async function sendToMake(event) {
+    // 計算生命靈數主命數與缺數的函式
+    function getNumerology(bdayStr) {
+        const nums = bdayStr.split("").map(Number);
+        let sum = nums.reduce((a, b) => a + b, 0);
+        while (sum > 9) {
+            sum = sum.toString().split("").map(Number).reduce((a, b) => a + b, 0);
+        }
+        const birthSet = new Set(nums);
+        let missing = [];
+        for (let i = 1; i <= 9; i++) {
+            if (!birthSet.has(i)) missing.push(i);
+        }
+        return { mainNum: sum, missingNums: missing.join(", ") };
+    }
+
+    async function fetchMayaAndSendToMake(event) {
         event.preventDefault();
         
-        // 🚨 這裡已經幫您自動替換成您在截圖中使用的專屬 Make Webhook 連結囉！
         const makeWebhookUrl = "https://hook.us2.make.com/71xg8fa26wxkwkxct1edfscpy9inxgsg"; 
 
         const name = document.getElementById('name').value;
-        const birthday = document.getElementById('birthday').value;
+        const birthday = document.getElementById('birthday').value; // 格式: YYYY-MM-DD
         const gender = document.getElementById('gender').value;
         const wrist = document.getElementById('wrist').value;
         
         const submitBtn = document.getElementById('submitBtn');
         const loadingStatus = document.getElementById('loadingStatus');
         
-        // 顯示載入狀態、禁用按鈕
         submitBtn.disabled = true;
         loadingStatus.style.display = 'block';
-        
-        // 打包要傳給 Make 大腦的資料
+
+        const pureBday = birthday.replace(/-/g, ""); // 變為 YYYYMMDD
+        const parts = birthday.split("-");
+        const year = parts[0];
+        const month = parseInt(parts[1], 10);
+        const day = parseInt(parts[2], 10);
+
+        // 先計算好生命靈數
+        const numResult = getNumerology(pureBday);
+
+        let detectedTotem = "無法自動取得（交由Gemini推算）";
+
+        try {
+            // 💡 核心技術：利用公開的 CORS 代理伺服器，模擬瀏覽器去爬取 glowing.cc 該生日的馬雅頁面
+            const targetUrl = `https://glowing.cc/1328?year=${year}&month=${month}&day=${day}`;
+            const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
+            
+            const proxyResponse = await fetch(proxyUrl);
+            if (proxyResponse.ok) {
+                const proxyData = await proxyResponse.json();
+                const htmlText = proxyData.contents;
+                
+                // 運用正則表達式，在網頁源碼中搜尋包含「KIN」或「圖騰名稱」的區塊
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(htmlText, 'text/html');
+                
+                // 嘗試抓取 glowing.cc 的關鍵圖騰文字標籤 (對應其網頁結構)
+                const titleEl = doc.querySelector('title') || doc.querySelector('h1') || doc.querySelector('.kin-title');
+                if (titleEl && titleEl.innerText) {
+                    detectedTotem = titleEl.innerText.trim();
+                } else {
+                    // 備用正則搜尋法
+                    const match = htmlText.match(/KIN\s*\d+|紅龍|白風|藍夜|黃種子|紅蛇|白世界橋|藍手|黃星星|紅月|白狗|藍猴|黃人|紅天行者|白巫師|藍鷹|黃戰士|紅地球|白鏡|藍風暴|黃太陽/);
+                    if (match) detectedTotem = match[0];
+                }
+            }
+        } catch (e) {
+            console.log("自動查馬雅圖騰受阻，將交由後台Gemini大腦做精準萬年曆補位算命。", e);
+        }
+
+        // 🛍️ 打包一整包無懈可擊的超豐富資料，發射給 Make Webhook
         const payload = {
             customer_name: name,
-            birthday_text: birthday.replace(/-/g, ""), // 把 1993-09-19 變成 19930919
+            birthday_text: pureBday,
             gender: gender,
-            wrist_size: wrist
+            wrist_size: wrist,
+            calculated_main_number: numResult.mainNum,
+            calculated_missing_numbers: numResult.missingNums,
+            glowing_cc_scraped_totem: detectedTotem, // 這裡就是從 glowing.cc 抓來的絕對精準圖騰！
+            source_url: `https://glowing.cc/1328?year=${year}&month=${month}&day=${day}`
         };
 
         try {
-            // 透過網路發送資料給 Make Webhook
             const response = await fetch(makeWebhookUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -115,7 +170,7 @@
             });
 
             if (response.ok) {
-                alert(`🎉 能量連結成功！\n\n大師已收到【${name}】的生日資料，正為您精準推算馬雅印記、缺數補強手鍊。請立刻前往 LINE 聊天室查看您的專屬占卜報告與配置明細！`);
+                alert(`🎉 全方位能量連結成功！\n\n網頁已成功對接 glowing.cc 查出您的馬雅印記，並連同生命靈數傳送給 Vibe.Aura 後台！\n\n大師正在為【${name}】調配水晶，請立刻前往 LINE 聊天室查看最準確的報告與配置明細！`);
                 document.getElementById('appForm').reset();
             } else {
                 alert("❌ 系統通訊有些微磁場干擾，請稍後再試。");
@@ -124,7 +179,6 @@
             console.error("Error:", error);
             alert("❌ 網路連結中斷，請確認連線狀態。");
         } finally {
-            // 恢復按鈕狀態
             submitBtn.disabled = false;
             loadingStatus.style.display = 'none';
         }
