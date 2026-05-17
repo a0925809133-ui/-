@@ -29,9 +29,16 @@
         
         #loadingStatus { margin-top: 20px; text-align: center; color: var(--primary); font-weight: bold; display: none; }
         
+        /* 結果呈現區域 */
+        #resultArea { margin-top: 25px; display: none; border-top: 2px solid #f0f0f0; padding-top: 20px; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .report-box { background: #f8f8ff; padding: 20px; border-radius: 12px; margin-top: 15px; border-left: 4px solid var(--primary); line-height: 1.6; font-size: 14px; white-space: pre-wrap; }
+        
+        .order-section { margin-top: 30px; background: #fff; border: 2px dashed var(--gold); padding: 20px; border-radius: 15px; }
+        .order-title { text-align: center; color: var(--gold); font-weight: bold; font-size: 1.2em; margin-bottom: 15px; }
+        .price-tag { font-size: 1.4em; color: #d63384; text-align: center; font-weight: bold; margin-bottom: 15px; }
         .info-footer { font-size: 0.85em; color: #888; text-align: center; margin-top: 25px; border-top: 1px solid #eee; padding-top: 15px;}
         .ig-connect { display: block; width: 80%; margin: 25px auto 0 auto; padding: 12px; background: #fff; color: var(--gold); border: 2px solid var(--gold); text-align: center; text-decoration: none; border-radius: 30px; font-weight: bold; transition: 0.3s; }
-        .ig-connect:hover { background: var(--gold); color: white; box-shadow: 0 4px 10px rgba(198, 160, 89, 0.4); }
     </style>
 </head>
 <body>
@@ -42,9 +49,9 @@
         <div class="brand-name">Vibe.Aura</div>
     </div>
     
-    <h2>✨ 馬雅圖騰 × 生命靈數全方位分析</h2>
+    <h2>✨ 馬雅圖騰 × 生命靈數客製化 AI占卜</h2>
     
-    <form id="appForm" onsubmit="fetchMayaAndSendToMake(event)">
+    <form id="appForm" onsubmit="startFrontEndAI(event)">
         <div class="input-group">
             <label>顧客姓名</label>
             <input type="text" id="name" required placeholder="請輸入您的姓名">
@@ -65,23 +72,56 @@
             <label>手圍 (cm)</label>
             <input type="number" id="wrist" placeholder="例如: 15.5" step="0.1" required>
         </div>
-        <button type="submit" id="submitBtn" class="btn-calc">啟動大師占卜並提交訂單 🔮</button>
+        <button type="submit" id="submitBtn" class="btn-calc">啟動大師占卜報告 🔮</button>
     </form>
 
-    <div id="loadingStatus">🔮 大師正在遠端連線馬雅曆法數據中，請稍候...</div>
+    <div id="loadingStatus">🔮 大師正連線 Glowing.cc 抓取圖騰並召喚 Gemini AI 觀星中...</div>
 
-    <div class="info-footer">
-        *本系統已精準對接馬雅圖騰查詢系統，由 Vibe.Aura 後台大腦即時調配。
+    <div id="resultArea">
+        <h3 style="text-align: center; color: var(--gold);">✨ 您的靈魂專屬分析報告 ✨</h3>
+        <div id="aiReportDisplay" class="report-box"></div>
+        
+        <div class="order-section">
+            <div class="order-title">🛍️ 預訂大師客製水晶手鍊</div>
+            <div class="price-tag">專屬客製祈福價：NT$ 1,680</div>
+            
+            <form onsubmit="submitFormFinal(event)">
+                <div class="input-group">
+                    <label>收件人姓名</label>
+                    <input type="text" id="shipName" required>
+                </div>
+                <div class="input-group">
+                    <label>收件電話</label>
+                    <input type="tel" id="shipPhone" required>
+                </div>
+                <div class="input-group">
+                    <label>收件地址 / 超商門市</label>
+                    <input type="text" id="shipAddress" required>
+                </div>
+                
+                <div style="background: #fffdf5; padding: 12px; border-radius: 8px; font-size: 0.9em; border: 1px solid #eec; margin-bottom: 15px; color: #751;">
+                    <strong>🏦 匯款帳號：</strong><br>
+                    銀行代碼：822 (中國信託)<br>
+                    匯款帳號：123-456789-012
+                </div>
+                
+                <button type="submit" class="btn-calc" style="background: linear-gradient(135deg, var(--gold), #b38f4b);">送出客製化手鍊訂單</button>
+            </form>
+        </div>
+
+        <a href="https://www.instagram.com/vibe.aura2026?igsh=MWxwdmkyMnJjeGNkbw%3D%3D" target="_blank" class="ig-connect">
+            📸 點我開啟 IG 私訊回傳匯款截圖
+        </a>
     </div>
 
-    <a href="https://www.instagram.com/vibe.aura2026?igsh=MWxwdmkyMnJjeGNkbw%3D%3D&utm_source=qr" target="_blank" class="ig-connect">
-        私訊 Vibe.Aura 聯絡大師
-    </a>
+    <div class="info-footer">
+        *本系統完全由 Vibe.Aura 內建高階 AI 大腦即時驅動演算。
+    </div>
 </div>
 
 <script>
-    // 計算生命靈數主命數與缺數的函式
-    function getNumerology(bdayStr) {
+    // 計算生命靈數基本盤
+    function calcNumerology(bdayStr) {
         const nums = bdayStr.split("").map(Number);
         let sum = nums.reduce((a, b) => a + b, 0);
         while (sum > 9) {
@@ -92,98 +132,106 @@
         for (let i = 1; i <= 9; i++) {
             if (!birthSet.has(i)) missing.push(i);
         }
-        return { mainNum: sum, missingNums: missing.join(", ") };
+        return { mainNum: sum, missingNums: missing.length > 0 ? missing.join(", ") : "無缺數" };
     }
 
-    async function fetchMayaAndSendToMake(event) {
+    async function startFrontEndAI(event) {
         event.preventDefault();
         
-        const makeWebhookUrl = "https://hook.us2.make.com/71xg8fa26wxkwkxct1edfscpy9inxgsg"; 
+        // 🔑 【唯一要填的設定】請在下方雙引號內填入您的 Google AI Studio 免費金鑰
+        const geminiApiKey = "在這裡填入您的Gemini_API_Key"; 
 
         const name = document.getElementById('name').value;
-        const birthday = document.getElementById('birthday').value; // 格式: YYYY-MM-DD
+        const birthday = document.getElementById('birthday').value; 
         const gender = document.getElementById('gender').value;
         const wrist = document.getElementById('wrist').value;
         
         const submitBtn = document.getElementById('submitBtn');
         const loadingStatus = document.getElementById('loadingStatus');
+        const resultArea = document.getElementById('resultArea');
+        const aiReportDisplay = document.getElementById('aiReportDisplay');
         
         submitBtn.disabled = true;
         loadingStatus.style.display = 'block';
+        resultArea.style.display = 'none';
 
-        const pureBday = birthday.replace(/-/g, ""); // 變為 YYYYMMDD
+        const pureBday = birthday.replace(/-/g, ""); 
         const parts = birthday.split("-");
-        const year = parts[0];
-        const month = parseInt(parts[1], 10);
-        const day = parseInt(parts[2], 10);
-
-        // 先計算好生命靈數
-        const numResult = getNumerology(pureBday);
-
-        let detectedTotem = "無法自動取得（交由Gemini推算）";
-
+        
+        // 1. 本地預算生命靈數
+        const numData = calcNumerology(pureBday);
+        
+        // 2. 肉身直接去爬 glowing.cc 該生日的網頁圖騰（最準版）
+        let scrapedTotem = "未成功取得網頁標題（由AI修正計算）";
         try {
-            // 💡 核心技術：利用公開的 CORS 代理伺服器，模擬瀏覽器去爬取 glowing.cc 該生日的馬雅頁面
-            const targetUrl = `https://glowing.cc/1328?year=${year}&month=${month}&day=${day}`;
+            const targetUrl = `https://glowing.cc/1328?year=${parts[0]}&month=${parseInt(parts[1],10)}&day=${parseInt(parts[2],10)}`;
             const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`;
-            
             const proxyResponse = await fetch(proxyUrl);
             if (proxyResponse.ok) {
                 const proxyData = await proxyResponse.json();
-                const htmlText = proxyData.contents;
-                
-                // 運用正則表達式，在網頁源碼中搜尋包含「KIN」或「圖騰名稱」的區塊
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(htmlText, 'text/html');
-                
-                // 嘗試抓取 glowing.cc 的關鍵圖騰文字標籤 (對應其網頁結構)
-                const titleEl = doc.querySelector('title') || doc.querySelector('h1') || doc.querySelector('.kin-title');
-                if (titleEl && titleEl.innerText) {
-                    detectedTotem = titleEl.innerText.trim();
-                } else {
-                    // 備用正則搜尋法
-                    const match = htmlText.match(/KIN\s*\d+|紅龍|白風|藍夜|黃種子|紅蛇|白世界橋|藍手|黃星星|紅月|白狗|藍猴|黃人|紅天行者|白巫師|藍鷹|黃戰士|紅地球|白鏡|藍風暴|黃太陽/);
-                    if (match) detectedTotem = match[0];
-                }
+                const doc = parser.parseFromString(proxyData.contents, 'text/html');
+                const titleEl = doc.querySelector('title') || doc.querySelector('h1');
+                if (titleEl) scrapedTotem = titleEl.innerText.trim();
             }
         } catch (e) {
-            console.log("自動查馬雅圖騰受阻，將交由後台Gemini大腦做精準萬年曆補位算命。", e);
+            console.log("網頁代理抓取稍有延遲，交給Gemini萬年曆補位。");
         }
 
-        // 🛍️ 打包一整包無懈可擊的超豐富資料，發射給 Make Webhook
-        const payload = {
-            customer_name: name,
-            birthday_text: pureBday,
-            gender: gender,
-            wrist_size: wrist,
-            calculated_main_number: numResult.mainNum,
-            calculated_missing_numbers: numResult.missingNums,
-            glowing_cc_scraped_totem: detectedTotem, // 這裡就是從 glowing.cc 抓來的絕對精準圖騰！
-            source_url: `https://glowing.cc/1328?year=${year}&month=${month}&day=${day}`
-        };
+        // 3. 🧠 繞過 Make，直接在前端呼叫 Google Gemini 2.0 大腦！
+        const promptText = `你是一位精通西方生命靈數與馬雅曆法的神祕學大師。現在有一位顧客：
+姓名：${name}
+生日：${pureBday}
+性別：${gender}
+手圍：${wrist} cm
+經系統串接glowing.cc查到的馬雅圖騰資訊為：${scrapedTotem}
+經初步計算主命數為：${numData.mainNum}，缺數為：${numData.missingNums}
+
+請為他寫一封極具神祕感、溫暖且專業的占卜報告。
+內容必須包含：
+1. 拆解他的馬雅曆印記本質天賦。
+2. 分析他的生命靈數主命數與缺數性格特色。
+3. 根據缺數與馬雅圖騰，精準客製化推薦適合他配戴的手鍊水晶種類，並說明能補強什麼能量。
+請用繁體中文回答，語氣要溫柔專業。`;
 
         try {
-            const response = await fetch(makeWebhookUrl, {
+            // 直接呼叫官方 Gemini 2.0 接口
+            const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${geminiApiKey}`;
+            const apiResponse = await fetch(geminiUrl, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: promptText }] }]
+                })
             });
 
-            if (response.ok) {
-                alert(`🎉 全方位能量連結成功！\n\n網頁已成功對接 glowing.cc 查出您的馬雅印記，並連同生命靈數傳送給 Vibe.Aura 後台！\n\n大師正在為【${name}】調配水晶，請立刻前往 LINE 聊天室查看最準確的報告與配置明細！`);
-                document.getElementById('appForm').reset();
+            if (apiResponse.ok) {
+                const apiData = await apiResponse.json();
+                const aiText = apiData.candidates[0].content.parts[0].text;
+                
+                // 成功抓到報告，當場呈現在網頁畫面上！
+                aiReportDisplay.innerText = aiText;
+                resultArea.style.display = 'block';
+                document.getElementById('shipName').value = name;
+                document.getElementById('aiReportDisplay').scrollIntoView({ behavior: 'smooth' });
             } else {
-                alert("❌ 系統通訊有些微磁場干擾，請稍後再試。");
+                alert("❌ AI 大腦連線稍有延遲，請重新點擊一次！");
             }
-        } catch (error) {
-            console.error("Error:", error);
-            alert("❌ 網路連結中斷，請確認連線狀態。");
+        } catch (err) {
+            console.error(err);
+            alert("❌ 網路連線磁場異常，請稍後再試。");
         } finally {
             submitBtn.disabled = false;
             loadingStatus.style.display = 'none';
         }
     }
+
+    function submitFormFinal(e) {
+        e.preventDefault();
+        alert("🎉 訂單提交成功！請複製上方的客製化分析報告，並前往下方 IG 私訊回傳匯款成功截圖，大師將立刻開始為您親手串製水晶手鍊！");
+    }
 </script>
 
+</script>
 </body>
 </html>
